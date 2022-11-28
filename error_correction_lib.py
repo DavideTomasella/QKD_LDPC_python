@@ -407,6 +407,7 @@ def test_ec(qber, R_range, codes, n, n_tries, f_start=1, show=1, discl_k=1):
     s_y_joins = code_params['s_y_joins']
     y_s_joins = code_params['y_s_joins']
     punct_list = code_params['punct_list']
+    syndrome_len = code_params['syndrome_len']
     p_n_max = len(punct_list)
     discl_n = int(round(n*(0.0280-0.02*R)*discl_k))
     qber_est = qber
@@ -429,7 +430,7 @@ def test_ec(qber, R_range, codes, n, n_tries, f_start=1, show=1, discl_k=1):
         if not ver_check:
             n_incor += 1
     print('Mean efficiency:', np.mean(f_rslt),
-          '\nMean additional communication rounds', np.mean(com_iters_rslt))
+          '\nMean additional communication rounds', np.mean(com_iters_rslt),"Effective R: ", (n-syndrome_len-s_n)/(n-p_n-s_n)   )
     return np.mean(f_rslt), np.mean(com_iters_rslt), R, s_n, p_n, p_n_max, k_n, discl_n, float(n_incor)/n_tries
 
 # %%

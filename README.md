@@ -73,7 +73,18 @@ then, only for the first time you need to install the dependencies:
 ```sh
 pip install numpy scipy
 ```
+or via the requirements file
+```sh
+pip install -r .\requirements.txt
+```
 and you should be ready to go.
+
+Optionally you can also install useful libraries via
+```sh
+pip install -r .\requirements-optional.txt
+```
+where matplotlib can be used for plotting while numba can be used to compile via a JIT some functions for a speedup (see develop brach)
+
 To exit form the virtualenv just type:
 ```sh
 deactivate
