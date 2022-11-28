@@ -1,11 +1,13 @@
+#%%
 import numpy as np
 from scipy.sparse import dok_matrix as sparse_matrix
 from scipy.sparse import find as sparse_find
 from time import time
 import random
 from numpy import zeros, ceil, floor, copy, mean, sign
-#from  numba import jit #For speedup calculation of g
+from  numba import jit #For speedup calculation of g
 
+#%%
 def generate_key(length):
     """
     Generate random key of length 'length'
@@ -42,7 +44,7 @@ def add_errors_prec(a, error_prob):
         K_cor[i] = 1-K_cor[i]
     return K_cor
 
-#@jit(nopython=True,nogil=True,cache=True)
+@jit(nopython=True,nogil=True,cache=True)
 def h_b(x):
     """
     Binary entropy function of 'x'
@@ -54,15 +56,18 @@ def h_b(x):
     else:
         print("Incorrect argument in binary entropy function")
 
-#@jit(nopython=True,nogil=True,cache=True)
+
+@jit(nopython=True,nogil=True,cache=True)
+def get_sigma_pi(qber, f, R):
+    pi = (f*h_b(qber)-1+R)/(f*h_b(qber)-1)
+    sigma = 1-(1-R)/f/h_b(qber)
+    return max(0, sigma), max(0, pi)
+
+
 def choose_sp(qber, f, R_range, n):
     '''
     Choose appropriate rate and numbers of shortened and punctured bits
     '''
-    def get_sigma_pi(qber, f, R):
-        pi = (f*h_b(qber)-1+R)/(f*h_b(qber)-1)
-        sigma = 1-(1-R)/f/h_b(qber)
-        return max(0, sigma), max(0, pi)
 
     delta_min = 1
     R_min = None
@@ -76,7 +81,6 @@ def choose_sp(qber, f, R_range, n):
             R_min = R
     if R_min is not None:
         return R_min, int(floor(n*sigma_min)), int(ceil(n*pi_min))
-
 
 def generate_sp(s_n, p_n, k_n, p_list=None):
     '''
@@ -119,16 +123,96 @@ def extend_sp(x, s_pos, p_pos, k_pos):
     x_ext[k_pos] = x
     return x_ext
 
-
 def encode_syndrome(x, s_y_joins):
     """
     Encode vector 'x' with sparse matrix, characterized by 's_y_joins'
     """
     m = len(s_y_joins)
-    s = generate_key_zeros(m)
-    for k in range(m):
-        s[k] = (sum(x[s_y_joins[k]]) % 2)
+    s=[sum(x[s_y_joins[k]]) % 2 for k in range(m)]
     return np.array(s)
+
+
+
+def h_func(x, mode=0):
+    """
+    Approximation of log(np.abs(np.exp(x)-1)) for 'mode'=0
+    """
+    if mode == 0:
+        if x < -3:
+            return 0
+        elif x < -0.68:
+            return -0.25*x-0.75
+        elif x < -0.27:
+            return -2*x-1.94
+        elif x < 0:
+            return -8*x-3.56
+        elif x < 0.15:
+            return 16*x-4
+        elif x < 0.4:
+            return 4*x-2.2
+        elif x < 1.3:
+            return 2*x-1.4
+        else:
+            return x-0.1
+    else:
+        return np.log(np.abs(np.exp(x)-1))
+
+@jit(nopython=True,nogil=True,cache=True)   
+def g_func_piecewise(x):
+    """
+    Approximation of log(1+exp(-x)) by linear interpolation between points
+    """
+    if x < 0.5:
+        return -x/2+0.7
+    elif x < 1.6:
+        return -x/4+0.575
+    elif x < 2.2:
+        return -x/8+0.375
+    elif x < 3.2:
+        return -x/16+0.2375
+    elif x < 4.4:
+        return -x/32+0.1375
+    else:
+        return 0
+@jit(nopython=True,nogil=True,cache=True)
+def g_func_table(x):
+    """
+    Aproximation of log(1+exp(-x)) by tabulated values
+    """
+    if x < 0.196:
+        return 0.65
+    elif x < 0.433:
+        return 0.55
+    elif x < 0.71:
+        return 0.45
+    elif x < 1.105:
+        return 0.35
+    elif x < 1.508:
+        return 0.25
+    elif x < 2.252:
+        return 0.15
+    elif x < 4.5:
+        return 0.05
+    else:
+        return 0
+
+@jit(nopython=True,nogil=True,cache=True)
+def core_func(x, y, mode=2):
+    '''
+    Core function () for computation of LLRs. 
+    'x' and 'y' are arguments. 
+    'mode' is approximation method: 0 - piecewise, 1 - table, 2 - exact,  
+    '''
+    if mode == 0:
+        # piecewise
+        return np.sign(x)*np.sign(y)*min(abs(x), abs(y))+g_func_piecewise(abs(x+y))-g_func_piecewise(abs(x-y))
+    elif mode == 1:
+        # table
+        return sign(x)*sign(y)*min(abs(x), abs(y))+g_func_table(abs(x+y))-g_func_table(abs(x-y))
+    else:
+        # exact
+        return sign(x)*sign(y)*min(abs(x), abs(y))+np.log(1+np.exp(-abs(x+y)))-np.log(1+np.exp(-abs(x-y)))
+
 
 
 def decode_syndrome_minLLR(y, s, s_y_joins, y_s_joins, qber_est, s_pos, p_pos, k_pos, r_start=None, max_iter=300, x=None, show=1, discl_n=20, n_iter_avg_window=5):
@@ -149,85 +233,6 @@ def decode_syndrome_minLLR(y, s, s_y_joins, y_s_joins, qber_est, s_pos, p_pos, k
     'z' -- decoded vector.
     'minLLR_inds' -- indices of symbols with minimal LLRs.
     """
-
-    def h_func(x, mode=0):
-        """
-        Approximation of log(np.abs(np.exp(x)-1)) for 'mode'=0
-        """
-        if mode == 0:
-            if x < -3:
-                return 0
-            elif x < -0.68:
-                return -0.25*x-0.75
-            elif x < -0.27:
-                return -2*x-1.94
-            elif x < 0:
-                return -8*x-3.56
-            elif x < 0.15:
-                return 16*x-4
-            elif x < 0.4:
-                return 4*x-2.2
-            elif x < 1.3:
-                return 2*x-1.4
-            else:
-                return x-0.1
-        else:
-            return np.log(np.abs(np.exp(x)-1))
-
-    #@jit(nopython=True,nogil=True,cache=True)
-    def core_func(x, y, mode=2):
-        '''
-        Core function () for computation of LLRs. 
-        'x' and 'y' are arguments. 
-        'mode' is approximation method: 0 - piecewise, 1 - table, 2 - exact,  
-        '''
-
-        def g_func_piecewise(x):
-            """
-            Approximation of log(1+exp(-x)) by linear interpolation between points
-            """
-            if x < 0.5:
-                return -x/2+0.7
-            elif x < 1.6:
-                return -x/4+0.575
-            elif x < 2.2:
-                return -x/8+0.375
-            elif x < 3.2:
-                return -x/16+0.2375
-            elif x < 4.4:
-                return -x/32+0.1375
-            else:
-                return 0
-
-        def g_func_table(x):
-            """
-            Aproximation of log(1+exp(-x)) by tabulated values
-            """
-            if x < 0.196:
-                return 0.65
-            elif x < 0.433:
-                return 0.55
-            elif x < 0.71:
-                return 0.45
-            elif x < 1.105:
-                return 0.35
-            elif x < 1.508:
-                return 0.25
-            elif x < 2.252:
-                return 0.15
-            elif x < 4.5:
-                return 0.05
-            else:
-                return 0
-        if mode == 0:
-            # piecewise
-            return np.sign(x)*np.sign(y)*min(abs(x), abs(y))+g_func_piecewise(abs(x+y))-g_func_piecewise(abs(x-y))
-        elif mode == 1:
-            # table
-            return sign(x)*sign(y)*min(abs(x), abs(y))+g_func_table(abs(x+y))-g_func_table(abs(x-y))
-        else:
-            # exact
-            return sign(x)*sign(y)*min(abs(x), abs(y))+np.log(1+np.exp(-abs(x+y)))-np.log(1+np.exp(-abs(x-y)))
 
     if not qber_est < 0.5:  # Adequate QBER check
         raise ValueError('Aprior error probability must be less than 1/2')
@@ -426,3 +431,5 @@ def test_ec(qber, R_range, codes, n, n_tries, f_start=1, show=1, discl_k=1):
     print('Mean efficiency:', np.mean(f_rslt),
           '\nMean additional communication rounds', np.mean(com_iters_rslt))
     return np.mean(f_rslt), np.mean(com_iters_rslt), R, s_n, p_n, p_n_max, k_n, discl_n, float(n_incor)/n_tries
+
+# %%

@@ -1,11 +1,13 @@
 import error_correction_lib as ec
 import numpy as np
 from file_utils import codes_from_file
+import time
+start_time = time.time()
 
 # Choose of the codes pool:
-#codes = codes_from_file('codes_4000.txt'); n = 4000
-codes = codes_from_file('codes_1944.txt')
-n = 1944
+codes = codes_from_file('codes_4000.txt'); n = 4000
+# codes = codes_from_file('codes_1944.txt')
+# n = 1944
 
 # Computing the range of rates for given codes
 R_range = []
@@ -29,3 +31,4 @@ for qber in np.arange(qber_start, qber_end, qber_step):
     file_output.write('%8.4f%14.8f%14.8f%14.8f%10d%10d%10d%14d%10d%14.8f\n' % (
         qber, f_mean, com_iters_mean, R, s_n, p_n, p_n_max, k_n, discl_n, FER))
 file_output.close()
+print("--- %s seconds ---" % (time.time() - start_time))
