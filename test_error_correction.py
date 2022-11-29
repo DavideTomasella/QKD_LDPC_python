@@ -6,9 +6,8 @@ start_time = time.time()
 from os import path
 
 # Choose of the codes pool:
-codes = codes_from_file('codes_4000.txt'); n = 4000
-# codes = codes_from_file('codes_1944.txt')
-# n = 1944
+#codes = codes_from_file('codes_4000.txt'); n = 4000
+codes = codes_from_file('codes_1944.txt'); n = 1944
 
 # Computing the range of rates for given codes
 R_range = []
@@ -18,8 +17,8 @@ print(f"R range is: {np.sort(R_range)}")
 
 fname = 'output.txt'  # file name for the output
 f_start = 1.0  # initial efficiency of decoding
-qber_start = 0.2
-qber_end = 0.3
+qber_start = 0.02
+qber_end = 0.03
 qber_step = 0.01  # range of QBERs
 n_tries = 2  # number of keys proccessed for each QBER value
 
