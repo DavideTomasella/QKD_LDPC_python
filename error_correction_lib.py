@@ -148,6 +148,7 @@ def decode_syndrome_minLLR(y, s, s_y_joins, y_s_joins, qber_est, s_pos, p_pos, k
     OUTPUT
     'z' -- decoded vector.
     'minLLR_inds' -- indices of symbols with minimal LLRs.
+    'n_iter' -- number of iteration of the decoding tree
     """
 
     def h_func(x, mode=0):
@@ -304,7 +305,7 @@ def decode_syndrome_minLLR(y, s, s_y_joins, y_s_joins, qber_est, s_pos, p_pos, k
             if show > 0:
                 print('Done in ', n_iter, 'iters, matched bits:',
                       np.count_nonzero(z == x), '/', n)
-            return z, None
+            return z, None, n_iter
         if show > 1:
             print('Matched bits:', np.count_nonzero(z == x), '/', n, 'Mean LLR magnitude:', mean(abs(sum_E[v_pos])),
                   'Averaged mean LLR magnitude:', sum(sum_E_abs_mean_hist[max(0, n_iter-n_iter_avg_window):n_iter])/(min(n_iter, n_iter_avg_window)+10**(-10)))
@@ -327,7 +328,7 @@ def decode_syndrome_minLLR(y, s, s_y_joins, y_s_joins, qber_est, s_pos, p_pos, k
                     ind = sum_E_abs.index(min(sum_E_abs))
                     minLLR_inds.append(ind)
                     sum_E_abs[ind] += maxLLR
-                return None, minLLR_inds
+                return None, minLLR_inds, n_iter
             else:
                 sum_E_mean_avg_old = sum_E_mean_avg_cur
 
@@ -342,10 +343,10 @@ def decode_syndrome_minLLR(y, s, s_y_joins, y_s_joins, qber_est, s_pos, p_pos, k
         ind = sum_E_abs.index(min(sum_E_abs))
         minLLR_inds.append(ind)
         sum_E_abs[ind] += maxLLR
-    return None, minLLR_inds
+    return None, minLLR_inds, n_iter
 
 
-def perform_ec(x, y, s_y_joins, y_s_joins, qber_est, s_n, p_n, punct_list=None, discl_n=20, show=0):
+def perform_ec(x, y, s_y_joins, y_s_joins, qber_est, s_n, p_n, punct_list=None, discl_n=20, show=0, max_iter=100500):
     n = len(y_s_joins)
     m = len(s_y_joins)
 
@@ -364,8 +365,8 @@ def perform_ec(x, y, s_y_joins, y_s_joins, qber_est, s_n, p_n, punct_list=None, 
 
     e_pat_in = generate_key_zeros(n)
 
-    e_pat, minLLR_inds = decode_syndrome_minLLR(e_pat_in, s_d, s_y_joins, y_s_joins, qber_est, s_pos,
-                                                p_pos, k_pos, max_iter=100500, x=key_sum, show=show, discl_n=discl_n, n_iter_avg_window=5)
+    e_pat, minLLR_inds, n_tries = decode_syndrome_minLLR(e_pat_in, s_d, s_y_joins, y_s_joins, qber_est, s_pos,
+                                                p_pos, k_pos, max_iter=max_iter, x=key_sum, show=show, discl_n=discl_n, n_iter_avg_window=5)
 
     add_info = 0
     com_iters = 0
@@ -379,8 +380,8 @@ def perform_ec(x, y, s_y_joins, y_s_joins, qber_est, s_n, p_n, punct_list=None, 
         k_pos = list(set(k_pos) - set(minLLR_inds))
         if p_pos is not None:
             p_pos = list(set(p_pos) - set(minLLR_inds))
-        e_pat, minLLR_inds = decode_syndrome_minLLR(e_pat_in, s_d, s_y_joins, y_s_joins, qber_est, s_pos, p_pos,
-                                                    k_pos, r_start=None, max_iter=100500, x=key_sum, show=show, discl_n=discl_n, n_iter_avg_window=5)
+        e_pat, minLLR_inds, n_iters = decode_syndrome_minLLR(e_pat_in, s_d, s_y_joins, y_s_joins, qber_est, s_pos, p_pos,
+                                                    k_pos, r_start=None, max_iter=max_iter, x=key_sum, show=show, discl_n=discl_n, n_iter_avg_window=5)
         add_info += discl_n
         com_iters += 1
 
@@ -391,10 +392,10 @@ def perform_ec(x, y, s_y_joins, y_s_joins, qber_est, s_n, p_n, punct_list=None, 
         print("VERIFICATION ERROR")
         # print '\nInitial error pattern:\n', np.nonzero((x_ext+y_ext)%2),'\nFinal error pattern:\n', np.nonzero(e_pat)
 
-    return add_info, com_iters, e_pat[k_pos_in], ver_check
+    return add_info, com_iters, e_pat[k_pos_in], ver_check, n_iters
 
 
-def test_ec(qber, R_range, codes, n, n_tries, f_start=1, show=1, discl_k=1):
+def test_ec(qber, R_range, codes, n, n_tries, f_start=1, show=1, discl_k=1, max_iter=100500):
     R, s_n, p_n = choose_sp(qber, f_start, R_range, n)
     k_n = n-s_n-p_n
     m = (1-R)*n
@@ -408,6 +409,7 @@ def test_ec(qber, R_range, codes, n, n_tries, f_start=1, show=1, discl_k=1):
     qber_est = qber
     f_rslt = []
     com_iters_rslt = []
+    n_iters_rslt = []
     n_incor = 0
 
     print("QBER = ", qber, "R =", R, "s_n =", s_n, "p_n =",
@@ -417,13 +419,14 @@ def test_ec(qber, R_range, codes, n, n_tries, f_start=1, show=1, discl_k=1):
         print(i, end=' ')
         x = generate_key(n-s_n-p_n)
         y = add_errors(x, qber)
-        add_info, com_iters, x_dec, ver_check = perform_ec(
-            x, y, s_y_joins, y_s_joins, qber_est, s_n, p_n, punct_list=punct_list, discl_n=discl_n, show=show)
+        add_info, com_iters, x_dec, ver_check, n_iters = perform_ec(
+            x, y, s_y_joins, y_s_joins, qber_est, s_n, p_n, punct_list=punct_list, discl_n=discl_n, show=show, max_iter=max_iter)
         f_cur = float(m-p_n+add_info)/(n-p_n-s_n)/h_b(qber)
         f_rslt.append(f_cur)
         com_iters_rslt.append(com_iters)
+        n_iters_rslt.append(n_iters)
         if not ver_check:
             n_incor += 1
     print('Mean efficiency:', np.mean(f_rslt),
           '\nMean additional communication rounds', np.mean(com_iters_rslt),"Effective R: ", (n-syndrome_len-s_n)/(n-p_n-s_n)   )
-    return np.mean(f_rslt), np.mean(com_iters_rslt), R, s_n, p_n, p_n_max, k_n, discl_n, float(n_incor)/n_tries
+    return np.mean(f_rslt), np.mean(com_iters_rslt), np.mean(n_iters_rslt), R, s_n, p_n, p_n_max, k_n, discl_n, float(n_incor)/n_tries

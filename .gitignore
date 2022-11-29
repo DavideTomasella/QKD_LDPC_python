@@ -1,5 +1,5 @@
 *.pyc
 
-output.txt
+#output.txt
 
 __pycache__/
