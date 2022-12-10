@@ -4,7 +4,8 @@ from scipy.sparse import find as sparse_find
 from time import time
 import random
 from numpy import zeros, ceil, floor, copy, mean, sign
-#from  numba import jit #For speedup calculation of g
+# from  numba import jit #For speedup calculation of g
+
 
 def generate_key(length):
     """
@@ -42,7 +43,9 @@ def add_errors_prec(a, error_prob):
         K_cor[i] = 1-K_cor[i]
     return K_cor
 
-#@jit(nopython=True,nogil=True,cache=True)
+# @jit(nopython=True,nogil=True,cache=True)
+
+
 def h_b(x):
     """
     Binary entropy function of 'x'
@@ -54,14 +57,16 @@ def h_b(x):
     else:
         print("Incorrect argument in binary entropy function")
 
-#@jit(nopython=True,nogil=True,cache=True)
+# @jit(nopython=True,nogil=True,cache=True)
+
+
 def choose_sp(qber, f, R_range, n):
     '''
     Choose appropriate rate and numbers of shortened and punctured bits
     '''
     def get_sigma_pi(qber, f, R):
-        pi = (f*h_b(qber)-1+R)/(f*h_b(qber)-1) #pi = ratio of punctured bits
-        sigma = 1-(1-R)/f/h_b(qber)      #sigma = ratio of shortened bits   
+        pi = (f*h_b(qber)-1+R)/(f*h_b(qber)-1)  # pi = ratio of punctured bits
+        sigma = 1-(1-R)/f/h_b(qber)  # sigma = ratio of shortened bits
         return max(0, sigma), max(0, pi)
 
     delta_min = 1
@@ -100,6 +105,7 @@ def generate_sp(s_n, p_n, k_n, p_list=None):
     s_pos = np.sort(random.sample(list(all_pos1), s_n))
     k_pos = np.setdiff1d(all_pos1, s_pos)
     return s_pos, p_pos, k_pos
+
 
 def extend_sp(x, s_pos, p_pos, k_pos):
     '''
@@ -175,7 +181,7 @@ def decode_syndrome_minLLR(y, s, s_y_joins, y_s_joins, qber_est, s_pos, p_pos, k
         else:
             return np.log(np.abs(np.exp(x)-1))
 
-    #@jit(nopython=True,nogil=True,cache=True)
+    # @jit(nopython=True,nogil=True,cache=True)
     def core_func(x, y, mode=2):
         '''
         Core function () for computation of LLRs. 
@@ -366,10 +372,11 @@ def perform_ec(x, y, s_y_joins, y_s_joins, qber_est, s_n, p_n, punct_list=None, 
     e_pat_in = generate_key_zeros(n)
 
     e_pat, minLLR_inds, n_tries = decode_syndrome_minLLR(e_pat_in, s_d, s_y_joins, y_s_joins, qber_est, s_pos,
-                                                p_pos, k_pos, max_iter=max_iter, x=key_sum, show=show, discl_n=discl_n, n_iter_avg_window=5)
+                                                         p_pos, k_pos, max_iter=max_iter, x=key_sum, show=show, discl_n=discl_n, n_iter_avg_window=5)
 
     add_info = 0
     com_iters = 0
+    n_iters = 0
 
     while e_pat is None:
         if show > 1:
@@ -381,7 +388,7 @@ def perform_ec(x, y, s_y_joins, y_s_joins, qber_est, s_n, p_n, punct_list=None, 
         if p_pos is not None:
             p_pos = list(set(p_pos) - set(minLLR_inds))
         e_pat, minLLR_inds, n_iters = decode_syndrome_minLLR(e_pat_in, s_d, s_y_joins, y_s_joins, qber_est, s_pos, p_pos,
-                                                    k_pos, r_start=None, max_iter=max_iter, x=key_sum, show=show, discl_n=discl_n, n_iter_avg_window=5)
+                                                             k_pos, r_start=None, max_iter=max_iter, x=key_sum, show=show, discl_n=discl_n, n_iter_avg_window=5)
         add_info += discl_n
         com_iters += 1
 
@@ -428,5 +435,5 @@ def test_ec(qber, R_range, codes, n, n_tries, f_start=1, show=1, discl_k=1, max_
         if not ver_check:
             n_incor += 1
     print('Mean efficiency:', np.mean(f_rslt),
-          '\nMean additional communication rounds', np.mean(com_iters_rslt),"Effective R: ", (n-syndrome_len-s_n)/(n-p_n-s_n)   )
+          '\nMean additional communication rounds', np.mean(com_iters_rslt), "Effective R: ", (n-syndrome_len-s_n)/(n-p_n-s_n))
     return np.mean(f_rslt), np.mean(com_iters_rslt), np.mean(n_iters_rslt), R, s_n, p_n, p_n_max, k_n, discl_n, float(n_incor)/n_tries
