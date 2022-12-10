@@ -7,7 +7,7 @@ from multiprocessing import Process, Lock
 sys.path.append(os.path.dirname(__file__))
 
 
-def run_test(n, f_start, qber_start, qber_end, qber_step, n_tries, lock: Lock, process_number):
+def run_test(n, f_start, qber_start, qber_end, qber_step, n_tries, range, lock: Lock, process_number):
     # Choose of the codes pool:
     #codes = codes_from_file('codes_4000.txt'); n = 4000
     codes = codes_from_file('codes_'+str(n)+'.txt')
@@ -17,6 +17,8 @@ def run_test(n, f_start, qber_start, qber_end, qber_step, n_tries, lock: Lock, p
     for code in codes:
         R_range.append(code[0])
     print(f"R range is: {np.sort(R_range)}")
+    if range is not None:
+        R_range = [range]
 
     fname = 'output.txt'  # file name for the output
 
@@ -49,9 +51,9 @@ if __name__ == '__main__':
 
     n = 1944
     f_start = 1.0  # initial efficiency of decoding
-    qber_start = 0.046
-    qber_end = 0.047
+    qber_start = 0.15
+    qber_end = 0.151
     qber_step = 0.001  # range of QBERs
-    n_tries = 20  # number of keys proccessed for each QBER value
+    n_tries = 1  # number of keys proccessed for each QBER value
     run_test(n, f_start, qber_start, qber_end,
-             qber_step, n_tries, Lock(), np.random.randint(0, 1000))
+             qber_step, n_tries, None, Lock(), np.random.randint(0, 1000))
