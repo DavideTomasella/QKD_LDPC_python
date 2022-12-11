@@ -15,6 +15,40 @@ if __name__ == '__main__':
     n_tries = 20  # number of keys proccessed for each QBER value
     nthreads = 5
 
+    exit(0)
+    threads = []
+    n = 4000
+
+    qber_start = 0.01
+    qber_end = 0.015
+    print("STARTING [%f,%f]" % (qber_start, qber_end))
+    threads.append(Process(target=run_test,
+                           args=(n, f_start, qber_start, qber_end,
+                                 qber_step, n_tries, 0.85, lock, nrun+2)))
+    qber_start = 0.02
+    qber_end = 0.022
+    print("STARTING [%f,%f]" % (qber_start, qber_end))
+    threads.append(Process(target=run_test,
+                           args=(n, f_start, qber_start, qber_end,
+                                 qber_step, n_tries, 0.8, lock, nrun+3)))
+    qber_start = 0.03
+    qber_end = 0.035
+    print("STARTING [%f,%f]" % (qber_start, qber_end))
+    threads.append(Process(target=run_test,
+                           args=(n, f_start, qber_start, qber_end,
+                                 qber_step, n_tries, 0.75, lock, nrun+4)))
+    qber_start = 0.055
+    qber_end = 0.057
+    print("STARTING [%f,%f]" % (qber_start, qber_end))
+    threads.append(Process(target=run_test,
+                           args=(n, f_start, qber_start, qber_end,
+                                 qber_step, n_tries, 0.65, lock, nrun+5)))
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        threads[-1].join()
+    exit(0)
+
     threads = []
     qber_start = 0.026
     qber_end = 0.05
@@ -41,7 +75,7 @@ if __name__ == '__main__':
                            args=(n, f_start, qber_start, qber_end,
                                  qber_step, n_tries, 0.6667, lock, nrun+4)))
     qber_start = 0.078
-    qber_end = 0.01
+    qber_end = 0.1
     print("STARTING [%f,%f]" % (qber_start, qber_end))
     threads.append(Process(target=run_test,
                            args=(n, f_start, qber_start, qber_end,
