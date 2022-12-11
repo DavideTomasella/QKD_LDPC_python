@@ -42,7 +42,7 @@ def run_test(n, f_start, qber_start, qber_end, qber_step, n_tries, range, mys_n,
             # R= rate of the code, s_n= number of shortened bits, p_n= number of punctured bits, p_n_max= maximal number of punctured bits,
             # k_n= n-s_n-p_n, discl_n= number of disclosed bits, FER= frame error rate
             f_mean, com_iters_mean, n_iters_mean, R, s_n, p_n, p_n_max, k_n, discl_n, FER = ec.test_ec(
-                qber, R_range, codes, n, n_tries, f_start=f_start, show=2, discl_k=1, max_iter=100500, my_s_p=my_s_p)
+                qber, R_range, codes, n, n_tries, f_start=f_start, show=1, discl_k=1, max_iter=100500, my_s_p=my_s_p)
             # print(f"qber: {qber}, f_mean: {f_mean}, com_iters_mean: {com_iters_mean}, R: {R}, s_n: {s_n}, p_n: {p_n}, p_n_max: {p_n_max}, k_n: {k_n}, discl_n: {discl_n}, FER: {FER}")
             lock.acquire()
             with open(fname, 'a') as file_output:
@@ -54,7 +54,7 @@ def run_test(n, f_start, qber_start, qber_end, qber_step, n_tries, range, mys_n,
             for pp_n in myp_n:
                 if ss_n+pp_n < n:
                     f_mean, com_iters_mean, n_iters_mean, R, s_n, p_n, p_n_max, k_n, discl_n, FER = ec.test_ec(
-                        qber_start, R_range, codes, n, n_tries, f_start=f_start, show=2, discl_k=1, max_iter=100500, my_s_p=[range, ss_n, pp_n])
+                        qber_start, R_range, codes, n, n_tries, f_start=f_start, show=1, discl_k=1, max_iter=1000, my_s_p=[range, ss_n, pp_n])
                     # print(f"qber: {qber}, f_mean: {f_mean}, com_iters_mean: {com_iters_mean}, R: {R}, s_n: {s_n}, p_n: {p_n}, p_n_max: {p_n_max}, k_n: {k_n}, discl_n: {discl_n}, FER: {FER}")
                     lock.acquire()
                     with open(fname, 'a') as file_output:
