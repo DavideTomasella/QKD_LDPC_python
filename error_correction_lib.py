@@ -304,6 +304,9 @@ def decode_syndrome_minLLR(y, s, s_y_joins, y_s_joins, qber_est, s_pos, p_pos, k
         sum_E = E.sum(axis=0)+r
         z = (1-np.sign(sum_E))/2  # Current decoded message
 
+        if show > 1:
+            print('Matched bits:', np.count_nonzero(z == x), '/', n, 'Mean LLR magnitude:', mean(abs(sum_E[v_pos])),
+                  'Averaged mean LLR magnitude:', sum(sum_E_abs_mean_hist[max(0, n_iter-n_iter_avg_window):n_iter])/(min(n_iter, n_iter_avg_window)+10**(-10)))
         if (s == encode_syndrome(z, s_y_joins)).all():  # If syndrome is correct
             if np.count_nonzero(z == x) != n:
                 print("Convergence error, error positions:")
@@ -312,9 +315,6 @@ def decode_syndrome_minLLR(y, s, s_y_joins, y_s_joins, qber_est, s_pos, p_pos, k
                 print('Done in ', n_iter, 'iters, matched bits:',
                       np.count_nonzero(z == x), '/', n)
             return z, None, n_iter
-        if show > 1:
-            print('Matched bits:', np.count_nonzero(z == x), '/', n, 'Mean LLR magnitude:', mean(abs(sum_E[v_pos])),
-                  'Averaged mean LLR magnitude:', sum(sum_E_abs_mean_hist[max(0, n_iter-n_iter_avg_window):n_iter])/(min(n_iter, n_iter_avg_window)+10**(-10)))
 
         # Check for procedure stop
 
@@ -377,7 +377,9 @@ def perform_ec(x, y, s_y_joins, y_s_joins, qber_est, s_n, p_n, punct_list=None, 
     add_info = 0
     com_iters = 0
     n_iters = 0
-
+    # DT
+    ver_check = e_pat is not None
+    return add_info, com_iters, [], ver_check, n_iters
     while e_pat is None:
         if show > 1:
             print('Additional iteration with p_n=', len(p_pos),
@@ -402,8 +404,10 @@ def perform_ec(x, y, s_y_joins, y_s_joins, qber_est, s_n, p_n, punct_list=None, 
     return add_info, com_iters, e_pat[k_pos_in], ver_check, n_iters
 
 
-def test_ec(qber, R_range, codes, n, n_tries, f_start=1, show=1, discl_k=1, max_iter=100500):
+def test_ec(qber, R_range, codes, n, n_tries, f_start=1, show=1, discl_k=1, max_iter=100500, my_s_p=None):
     R, s_n, p_n = choose_sp(qber, f_start, R_range, n)
+    if my_s_p is not None:
+        R, s_n, p_n = my_s_p
     k_n = n-s_n-p_n
     m = (1-R)*n
     code_params = codes[(R, n)]
