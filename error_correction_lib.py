@@ -378,8 +378,8 @@ def perform_ec(x, y, s_y_joins, y_s_joins, qber_est, s_n, p_n, punct_list=None, 
     com_iters = 0
     n_iters = 0
     # DT
-    ver_check = e_pat is not None
-    return add_info, com_iters, [], ver_check, n_iters
+    # ver_check = e_pat is not None
+    # return add_info, com_iters, [], ver_check, n_iters
     while e_pat is None:
         if show > 1:
             print('Additional iteration with p_n=', len(p_pos),
