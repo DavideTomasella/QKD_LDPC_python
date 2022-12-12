@@ -427,15 +427,17 @@ def test_ec(qber, R_range, codes, n, n_tries, f_start=1, show=1, discl_k=1, max_
           p_n, '(', p_n_max, ')', 'discl_n', discl_n)
 
     for i in range(n_tries):
-        print(i, end=' ')
+        if show > 0:
+            print(i, end=' ')
         x = generate_key(n-s_n-p_n)
         y = add_errors(x, qber)
         add_info, com_iters, x_dec, ver_check, n_iters = perform_ec(
             x, y, s_y_joins, y_s_joins, qber_est, s_n, p_n, punct_list=punct_list, discl_n=discl_n, show=show, max_iter=max_iter)
-        f_cur = float(m-p_n+add_info)/(n-p_n-s_n)/h_b(qber)
-        f_rslt.append(f_cur)
-        com_iters_rslt.append(com_iters)
-        n_iters_rslt.append(n_iters)
+        if ver_check:
+            f_cur = float(m-p_n+add_info)/(n-p_n-s_n)/h_b(qber)
+            f_rslt.append(f_cur)
+            com_iters_rslt.append(com_iters)
+            n_iters_rslt.append(n_iters)
         if not ver_check:
             n_incor += 1
     print('Mean efficiency:', np.mean(f_rslt),
