@@ -32,9 +32,12 @@ def run_test_cascade(n, qber_start, qber_end, qber_step, n_tries, passes, konst,
                 qber, n, n_tries, passes, konst, show=0, max_iter=100500)
             # print(f"qber: {qber}, f_mean: {f_mean}, com_iters_mean: {com_iters_mean}, R: {R}, s_n: {s_n}, p_n: {p_n}, p_n_max: {p_n_max}, k_n: {k_n}, discl_n: {discl_n}, FER: {FER}")
             lock.acquire()
-            with open(fname, 'a') as file_output:
-                file_output.write('%d,%10d,%14.4f,%14.8f,%14.8f,%14.8f,%14.8f,%10d,%10d,%10d,%14d,%10d,%14.8f\n' %
-                                  (n, n_tries, qber, f_mean, com_iters_mean, n_iters_mean, 0, passes, konst*1000, 0, k_n, discl_n, FER))
+            try:
+                with open(fname, 'a') as file_output:
+                    file_output.write('%d,%10d,%14.4f,%14.8f,%14.8f,%14.8f,%14.8f,%10d,%10d,%10d,%14d,%10d,%14.8f\n' %
+                                      (n, n_tries, qber, f_mean, com_iters_mean, n_iters_mean, 0, passes, konst*1000, 0, k_n, discl_n, FER))
+            except:
+                pass
             lock.release()
     else:
         f_mean, com_iters_mean, n_iters_mean, R, s_n, p_n, p_n_max, k_n, discl_n, FER = cs.test_cascade(
