@@ -51,8 +51,8 @@ def choose_len(qber, k_i=0, n=1e4, konst=0.73):
     len = konst/qber
     if k_i > 0:
         len *= (k_i+1)
-    splitting = int(n//len)
-    return max(splitting, 1)
+    splitting = int(ceil(n/len))
+    return max(splitting, 2)
 
 
 def h_b(x):
@@ -81,9 +81,10 @@ def split_in_blocks(x, y, n_blocks):
 def recursion_cascade(x_blocks, y_blocks, x_parities, y_parities):  # must be np array
     # x_parities = [sum(block) % 2 for block in x_blocks]
     # y_parities = [sum(block) % 2 for block in y_blocks]
-    my_add_info = len(x_blocks)
+    print(x_blocks)
+    print(y_blocks)
     if sum((x_parities + y_parities) % 2) == 0:
-        return x_blocks, y_blocks, my_add_info, 1, 1
+        return x_blocks, y_blocks, 0, 1, 1
 
     # correct single length blocks
     tocorrect = np.int32((x_parities+y_parities) % 2 *
@@ -128,8 +129,12 @@ def recursion_cascade(x_blocks, y_blocks, x_parities, y_parities):  # must be np
     y_parities = np.concatenate((np.extract(select_left, left_y_parities),
                                  np.extract(select_right, right_y_parities)))
 
+    # additional bits discosed: for each block, we split and share the parity of the first half
+    my_add_info = len(left_x_parities)
+
     new_corrected_x_blocks, new_corrected_y_blocks, add_info, com_iters, n_iters = recursion_cascade(
         (new_wrong_x_blocks), (new_wrong_y_blocks), x_parities, y_parities)
+
     return correct_x_blocks+new_correct_x_blocks+new_corrected_x_blocks,\
         correct_y_blocks+new_correct_y_blocks+new_corrected_y_blocks,\
         add_info+my_add_info, com_iters+1, n_iters+1
@@ -137,7 +142,8 @@ def recursion_cascade(x_blocks, y_blocks, x_parities, y_parities):  # must be np
 
 def decode_cascade(x, y, qber_est, k_i, n, konst=0.73, show=1, max_iters=100500):
     splitting = choose_len(qber_est, k_i, n, konst)
-    if splitting <= 1 and k_i > 0:  # to few data for entire process: skip
+    # to few data for entire process: skip
+    if choose_len(qber_est, k_i-1, n, konst) <= 2 and k_i > 0:
         return 0, 0, 0, True, x, y
 
     x_blocks, y_blocks, indexes = split_in_blocks(x, y, splitting)
@@ -145,6 +151,7 @@ def decode_cascade(x, y, qber_est, k_i, n, konst=0.73, show=1, max_iters=100500)
 
     x_parities = np.array([sum(block) % 2 for block in x_blocks])
     y_parities = np.array([sum(block) % 2 for block in y_blocks])
+    my_add_info = len(x_parities)
 
     # add_info = 0
     # com_iters = 0
@@ -189,9 +196,9 @@ def decode_cascade(x, y, qber_est, k_i, n, konst=0.73, show=1, max_iters=100500)
     ver_check = (x_dec == y_dec).all()
     if show > 1:
         print("Pass ", k_i, ' in ', com_iters, " iters, using ",
-              add_info, " bits, matched bits:", sum(x_dec == y_dec), "/", n)
+              my_add_info+add_info, " bits, matched bits:", sum(x_dec == y_dec), "/", n)
 
-    return add_info, com_iters, n_iters, ver_check, x_dec, y_dec
+    return my_add_info+add_info, com_iters, n_iters, ver_check, x_dec, y_dec
 
 
 def perform_cascade(x, y, qber_est, passes=4, konst=0.73, show=1, max_iter=100500):
@@ -260,20 +267,24 @@ def test_cascade(qber, n, n_tries, passes=4, konst=0.73, show=1, max_iter=100500
         if show > 0:
             print(i, end=' ')
         x = generate_key(n)
-        y = add_errors(x, qber)
+        y = add_errors_prec(x, qber)
         add_info, com_iters, e_pat, ver_check, n_iters, x_dec, y_dec = perform_cascade(
             x, y, qber_est, passes=passes, konst=konst, show=show, max_iter=max_iter)
         if ver_check:
             f_cur = float(add_info)/(n)/h_b(qber)
             f_rslt.append(f_cur)
             com_iters_rslt.append(com_iters)
-            n_iters_rslt.append(n_iters)
             add_info_rslt.append(add_info)
-            corrected_rslt.append(sum(x_dec == y_dec))
+        n_iters_rslt.append(n_iters)
+        corrected_rslt.append(sum(x_dec == y_dec))
         if not ver_check:
             n_incor += 1
 
     print('Mean efficiency:', np.mean(f_rslt),
           '\nMean additional communication rounds', np.mean(com_iters_rslt), "Effective R: ", (n-add_info)/(n))
+    if n_incor == n_tries:
+        f_rslt = 0
+        com_iters_rslt = 0
+        add_info_rslt = 0
     return np.mean(f_rslt), np.mean(com_iters_rslt), np.mean(n_iters_rslt), 1, 0, 0, 0, \
         np.mean(corrected_rslt), np.mean(add_info_rslt), float(n_incor)/n_tries
