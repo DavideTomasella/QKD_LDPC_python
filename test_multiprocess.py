@@ -3,6 +3,7 @@ from multiprocessing import Process, Lock
 from test_error_correction import run_test
 from test_cascade import run_test_cascade
 import numpy as np
+import time
 
 if __name__ == '__main__':
     lock = Lock()
@@ -12,8 +13,8 @@ if __name__ == '__main__':
     f_start = 1.0  # initial efficiency of decoding
     qber_start0 = 0
     range = 0.03
-    qber_step = 0.0001  # 0.0001 - 0.001 # range of QBERs
-    n_tries = 200  # 100 - 20  # number of keys proccessed for each QBER value
+    qber_step = 0.00025  # 0.0001 - 0.001 # range of QBERs
+    n_tries = 200  # 200 - 20  # number of keys proccessed for each QBER value
     nthreads = 5
 
     passes = 4
@@ -30,7 +31,7 @@ if __name__ == '__main__':
         thread.start()
     for thread in threads:
         thread.join()
-
+    time.sleep(120)
     passes = 16
     konst = 1
     threads = []
@@ -45,7 +46,7 @@ if __name__ == '__main__':
         thread.start()
     for thread in threads:
         thread.join()
-
+    time.sleep(120)
     passes = 4
     konst = 0.1
     threads = []

@@ -81,8 +81,8 @@ def split_in_blocks(x, y, n_blocks):
 def recursion_cascade(x_blocks, y_blocks, x_parities, y_parities):  # must be np array
     # x_parities = [sum(block) % 2 for block in x_blocks]
     # y_parities = [sum(block) % 2 for block in y_blocks]
-    print(x_blocks)
-    print(y_blocks)
+    # print(x_blocks)
+    # print(y_blocks)
     if sum((x_parities + y_parities) % 2) == 0:
         return x_blocks, y_blocks, 0, 1, 1
 
@@ -255,6 +255,7 @@ def test_cascade(qber, n, n_tries, passes=4, konst=0.73, show=1, max_iter=100500
     # discl_n = int(round(n*(0.0280-0.02*R)*discl_k))
     qber_est = qber
     f_rslt = []
+    f2_rslt = []
     com_iters_rslt = []
     n_iters_rslt = []
     add_info_rslt = []
@@ -270,8 +271,9 @@ def test_cascade(qber, n, n_tries, passes=4, konst=0.73, show=1, max_iter=100500
         y = add_errors_prec(x, qber)
         add_info, com_iters, e_pat, ver_check, n_iters, x_dec, y_dec = perform_cascade(
             x, y, qber_est, passes=passes, konst=konst, show=show, max_iter=max_iter)
+        f_cur = float(add_info)/(n)/h_b(qber)
+        f2_rslt.append(f_cur)
         if ver_check:
-            f_cur = float(add_info)/(n)/h_b(qber)
             f_rslt.append(f_cur)
             com_iters_rslt.append(com_iters)
             add_info_rslt.append(add_info)
@@ -286,5 +288,5 @@ def test_cascade(qber, n, n_tries, passes=4, konst=0.73, show=1, max_iter=100500
         f_rslt = 0
         com_iters_rslt = 0
         add_info_rslt = 0
-    return np.mean(f_rslt), np.mean(com_iters_rslt), np.mean(n_iters_rslt), 1, 0, 0, 0, \
+    return np.mean(f_rslt), np.mean(com_iters_rslt), np.mean(n_iters_rslt), np.mean(f2_rslt), 0, 0, 0, \
         np.mean(corrected_rslt), np.mean(add_info_rslt), float(n_incor)/n_tries

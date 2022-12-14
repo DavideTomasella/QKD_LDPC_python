@@ -11,7 +11,7 @@ def run_test_cascade(n, qber_start, qber_end, qber_step, n_tries, passes, konst,
     # Choose of the codes pool:
     # codes = codes_from_file('codes_4000.txt'); n = 4000
 
-    fname = 'ctest.txt'  # file name for the output
+    fname = 'coutput.txt'  # file name for the output
 
     lock.acquire()
     if not os.path.exists(fname):
@@ -35,7 +35,7 @@ def run_test_cascade(n, qber_start, qber_end, qber_step, n_tries, passes, konst,
             try:
                 with open(fname, 'a') as file_output:
                     file_output.write('%d,%10d,%14.4f,%14.8f,%14.8f,%14.8f,%14.8f,%10d,%10d,%10d,%14d,%10d,%14.8f\n' %
-                                      (n, n_tries, qber, f_mean, com_iters_mean, n_iters_mean, 0, passes, konst*1000, 0, k_n, discl_n, FER))
+                                      (n, n_tries, qber, f_mean, com_iters_mean, n_iters_mean, R, passes, konst*1000, 0, k_n, discl_n, FER))
             except:
                 pass
             lock.release()
@@ -46,7 +46,7 @@ def run_test_cascade(n, qber_start, qber_end, qber_step, n_tries, passes, konst,
         lock.acquire()
         with open(fname, 'a') as file_output:
             file_output.write('%d,%10d,%14.4f,%14.8f,%14.8f,%14.8f,%14.8f,%10d,%10d,%10d,%14d,%10d,%14.8f\n' %
-                              (n, n_tries, qber_start, f_mean, com_iters_mean, n_iters_mean, 0, passes, konst*1000, 0, k_n, discl_n, FER))
+                              (n, n_tries, qber_start, f_mean, com_iters_mean, n_iters_mean, R, passes, konst*1000, 0, k_n, discl_n, FER))
         lock.release()
     # Pypy
 
@@ -59,7 +59,7 @@ if __name__ == '__main__':
     qber_end = 0.021
     qber_step = 0.001  # range of QBERs
     n_tries = 1  # number of keys proccessed for each QBER value
-    passes = 16  # 16
+    passes = 1  # 16
     konst = 1  # 1
     run_test_cascade(n, qber_start, None, qber_step,
                      n_tries, passes, konst,
