@@ -24,7 +24,8 @@ if __name__ == '__main__':
         print("STARTING [%f,%f]" % (qber_start, qber_end))
         threads.append(Process(target=run_test,
                                args=(n, f_start, qber_start, qber_end,
-                                     qber_step, n_tries, None, lock, num)))
+                                     qber_step, n_tries, None, None, None,
+                                     lock, num)))
     for thread in threads:
         thread.start()
     for thread in threads:
@@ -37,7 +38,8 @@ if __name__ == '__main__':
         print("STARTING [%f,%f]" % (qber_start, qber_end))
         threads.append(Process(target=run_test,
                                args=(n, f_start, qber_start, qber_end,
-                                     qber_step, n_tries, None, lock, num)))
+                                     qber_step, n_tries, None, None, None,
+                                     lock, num)))
     for thread in threads:
         thread.start()
     for thread in threads:
@@ -111,7 +113,7 @@ if __name__ == '__main__':
     for thread in threads:
         thread.join()
 
-
+    exit(0)
 ##########################################
 ##########################################
 
