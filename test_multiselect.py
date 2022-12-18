@@ -15,105 +15,105 @@ if __name__ == '__main__':
     n_tries = 20  # number of keys proccessed for each QBER value
     nthreads = 5
 
-# ############## multiprocess
-    n = 1944
-    threads = []
-    for num in np.arange(nthreads):
-        qber_start = qber_start0+range*num
-        qber_end = qber_start+range
-        print("STARTING [%f,%f]" % (qber_start, qber_end))
-        threads.append(Process(target=run_test,
-                               args=(n, f_start, qber_start, qber_end,
-                                     qber_step, n_tries, None, None, None,
-                                     lock, num)))
-    for thread in threads:
-        thread.start()
-    for thread in threads:
-        thread.join()
-    n = 4000
-    threads = []
-    for num in np.arange(nthreads):
-        qber_start = qber_start0+range*num
-        qber_end = qber_start+range
-        print("STARTING [%f,%f]" % (qber_start, qber_end))
-        threads.append(Process(target=run_test,
-                               args=(n, f_start, qber_start, qber_end,
-                                     qber_step, n_tries, None, None, None,
-                                     lock, num)))
-    for thread in threads:
-        thread.start()
-    for thread in threads:
-        thread.join()
+# # ############## multiprocess
+#     n = 1944
+#     threads = []
+#     for num in np.arange(nthreads):
+#         qber_start = qber_start0+range*num
+#         qber_end = qber_start+range
+#         print("STARTING [%f,%f]" % (qber_start, qber_end))
+#         threads.append(Process(target=run_test,
+#                                args=(n, f_start, qber_start, qber_end,
+#                                      qber_step, n_tries, None, None, None,
+#                                      lock, num)))
+#     for thread in threads:
+#         thread.start()
+#     for thread in threads:
+#         thread.join()
+#     n = 4000
+#     threads = []
+#     for num in np.arange(nthreads):
+#         qber_start = qber_start0+range*num
+#         qber_end = qber_start+range
+#         print("STARTING [%f,%f]" % (qber_start, qber_end))
+#         threads.append(Process(target=run_test,
+#                                args=(n, f_start, qber_start, qber_end,
+#                                      qber_step, n_tries, None, None, None,
+#                                      lock, num)))
+#     for thread in threads:
+#         thread.start()
+#     for thread in threads:
+#         thread.join()
 
-########################
+# ########################
 
-    n = 1944
-    threads = []
-    qber_start = 0.02
-    s_n = np.int32(np.linspace(0, n*0.8333/2, 50))
-    p_n = [0]  # 152 227 302 439
-    threads.append(Process(target=run_test,
-                           args=(n, f_start, qber_start, None,
-                                 qber_step, n_tries, 0.8333, s_n, p_n,
-                                 lock, nrun+51)))
-    s_n = [0]
-    p_n = np.int32(np.linspace(0, 152, 10))  # 152 227 302 439
-    threads.append(Process(target=run_test,
-                           args=(n, f_start, qber_start, None,
-                                 qber_step, n_tries, 0.8333, s_n, p_n,
-                                 lock, nrun+52)))
-    qber_start = 0.1
-    s_n = np.int32(np.linspace(0, n*0.5/2, 30))
-    p_n = [0]  # 152 227 302 439
-    threads.append(Process(target=run_test,
-                           args=(n, f_start, qber_start, None,
-                                 qber_step, n_tries, 0.5, s_n, p_n,
-                                 lock, nrun+53)))
-    s_n = [0]
-    p_n = np.int32(np.linspace(0, 439, 30))  # 152 227 302 439
-    threads.append(Process(target=run_test,
-                           args=(n, f_start, qber_start, None,
-                                 qber_step, n_tries, 0.5, s_n, p_n,
-                                 lock, nrun+54)))
-    for thread in threads:
-        thread.start()
-    threads[-1].join()
+#     n = 1944
+#     threads = []
+#     qber_start = 0.02
+#     s_n = np.int32(np.linspace(0, n*0.8333/2, 50))
+#     p_n = [0]  # 152 227 302 439
+#     threads.append(Process(target=run_test,
+#                            args=(n, f_start, qber_start, None,
+#                                  qber_step, n_tries, 0.8333, s_n, p_n,
+#                                  lock, nrun+51)))
+#     s_n = [0]
+#     p_n = np.int32(np.linspace(0, 152, 10))  # 152 227 302 439
+#     threads.append(Process(target=run_test,
+#                            args=(n, f_start, qber_start, None,
+#                                  qber_step, n_tries, 0.8333, s_n, p_n,
+#                                  lock, nrun+52)))
+#     qber_start = 0.1
+#     s_n = np.int32(np.linspace(0, n*0.5/2, 30))
+#     p_n = [0]  # 152 227 302 439
+#     threads.append(Process(target=run_test,
+#                            args=(n, f_start, qber_start, None,
+#                                  qber_step, n_tries, 0.5, s_n, p_n,
+#                                  lock, nrun+53)))
+#     s_n = [0]
+#     p_n = np.int32(np.linspace(0, 439, 30))  # 152 227 302 439
+#     threads.append(Process(target=run_test,
+#                            args=(n, f_start, qber_start, None,
+#                                  qber_step, n_tries, 0.5, s_n, p_n,
+#                                  lock, nrun+54)))
+#     for thread in threads:
+#         thread.start()
+#     threads[-1].join()
 
-    n = 4000
-    threads = []
-    qber_start = 0.02
-    s_n = np.int32(np.linspace(0, n*0.85/2, 70))
-    p_n = [0]  # 266 864
-    threads.append(Process(target=run_test,
-                           args=(n, f_start, qber_start, None,
-                                 qber_step, n_tries, 0.85, s_n, p_n,
-                                 lock, nrun+55)))
-    s_n = [0]
-    p_n = np.int32(np.linspace(0, 266, 10))  # 266 864
-    threads.append(Process(target=run_test,
-                           args=(n, f_start, qber_start, None,
-                                 qber_step, n_tries, 0.85, s_n, p_n,
-                                 lock, nrun+56)))
-    qber_start = 0.1
-    s_n = np.int32(np.linspace(0, n*0.5/2, 40))
-    p_n = [0]  # 266 864
-    threads.append(Process(target=run_test,
-                           args=(n, f_start, qber_start, None,
-                                 qber_step, n_tries, 0.5, s_n, p_n,
-                                 lock, nrun+57)))
-    s_n = [0]
-    p_n = np.int32(np.linspace(0, 864, 30))  # 266 864
-    threads.append(Process(target=run_test,
-                           args=(n, f_start, qber_start, None,
-                                 qber_step, n_tries, 0.5, s_n, p_n,
-                                 lock, nrun+58)))
-    for thread in threads:
-        thread.start()
+#     n = 4000
+#     threads = []
+#     qber_start = 0.02
+#     s_n = np.int32(np.linspace(0, n*0.85/2, 70))
+#     p_n = [0]  # 266 864
+#     threads.append(Process(target=run_test,
+#                            args=(n, f_start, qber_start, None,
+#                                  qber_step, n_tries, 0.85, s_n, p_n,
+#                                  lock, nrun+55)))
+#     s_n = [0]
+#     p_n = np.int32(np.linspace(0, 266, 10))  # 266 864
+#     threads.append(Process(target=run_test,
+#                            args=(n, f_start, qber_start, None,
+#                                  qber_step, n_tries, 0.85, s_n, p_n,
+#                                  lock, nrun+56)))
+#     qber_start = 0.1
+#     s_n = np.int32(np.linspace(0, n*0.5/2, 40))
+#     p_n = [0]  # 266 864
+#     threads.append(Process(target=run_test,
+#                            args=(n, f_start, qber_start, None,
+#                                  qber_step, n_tries, 0.5, s_n, p_n,
+#                                  lock, nrun+57)))
+#     s_n = [0]
+#     p_n = np.int32(np.linspace(0, 864, 30))  # 266 864
+#     threads.append(Process(target=run_test,
+#                            args=(n, f_start, qber_start, None,
+#                                  qber_step, n_tries, 0.5, s_n, p_n,
+#                                  lock, nrun+58)))
+#     for thread in threads:
+#         thread.start()
 
-    for thread in threads:
-        thread.join()
+#     for thread in threads:
+#         thread.join()
 
-    exit(0)
+#     exit(0)
 ##########################################
 ##########################################
 
