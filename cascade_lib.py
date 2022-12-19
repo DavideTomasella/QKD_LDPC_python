@@ -67,9 +67,10 @@ def h_b(x):
         print("Incorrect argument in binary entropy function")
 
 
-def split_in_blocks(x, y, n_blocks):
+def split_in_blocks(x, y, n_blocks=2, idx=None):
     # TODO random split
-    idx = np.arange(len(x))
+    if not idx:
+        idx = np.arange(len(x))
     np.random.shuffle(idx)
     splits = np.int32(np.round(np.linspace(0, len(x), n_blocks+1)))
     x_split = ([x[idx[i:j]] for i, j in zip(splits[:-1], splits[1:])])
@@ -146,7 +147,7 @@ def decode_cascade(x, y, qber_est, k_i, n, konst=0.73, show=1, max_iters=100500)
     if choose_len(qber_est, k_i-1, n, konst) <= 2 and k_i > 0:
         return 0, 0, 0, True, x, y
 
-    x_blocks, y_blocks, indexes = split_in_blocks(x, y, splitting)
+    x_blocks, y_blocks, indexes = split_in_blocks(x, y, n_blocks=splitting)
     # e_pat_in = generate_key_zeros(n)
 
     x_parities = np.array([sum(block) % 2 for block in x_blocks])

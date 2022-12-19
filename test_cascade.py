@@ -35,7 +35,7 @@ def run_test_cascade(n, qber_start, qber_end, qber_step, n_tries, passes, konst,
             try:
                 with open(fname, 'a') as file_output:
                     file_output.write('%d,%10d,%14.4f,%14.8f,%14.8f,%14.8f,%14.8f,%10d,%10d,%10d,%14d,%10d,%14.8f\n' %
-                                      (n, n_tries, qber, f_mean, com_iters_mean, n_iters_mean, R, passes, konst*1000, 0, k_n, discl_n, FER))
+                                      (n, n_tries, qber, f_mean, com_iters_mean, n_iters_mean, R, passes, konst*1e6, 0, k_n, discl_n, FER))
             except:
                 pass
             lock.release()
