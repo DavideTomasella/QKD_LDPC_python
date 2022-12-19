@@ -163,8 +163,8 @@ if __name__ == '__main__':
                                  lock, nrun+6)))
     for thread in threads:
         thread.start()
-
-    threads[-1].join()
+    for thread in threads:
+        thread.join()
 
 #####################
     n = 4000
@@ -213,8 +213,9 @@ if __name__ == '__main__':
                                  lock, nrun+16)))
     for thread in threads:
         thread.start()
+    for thread in threads:
+        thread.join()
 
-    threads[-1].join()
     threads = []
     qber_start = 0.045  # ccccccccccccccccccccccccccccccccccc
     qber_end = 0.055
@@ -253,8 +254,9 @@ if __name__ == '__main__':
                                  lock, nrun+21)))
     for thread in threads:
         thread.start()
+    for thread in threads:
+        thread.join()
 
-    threads[-1].join()
     threads = []
     qber_start = 0.06
     qber_end = 0.07
@@ -293,8 +295,8 @@ if __name__ == '__main__':
                                  lock, nrun+26)))
     for thread in threads:
         thread.start()
-
-    threads[-1].join()
+    for thread in threads:
+        thread.join()
 
     ########
     n = 1944
@@ -343,8 +345,8 @@ if __name__ == '__main__':
                                  lock, nrun+36)))
     for thread in threads:
         thread.start()
-
-    threads[-1].join()
+    for thread in threads:
+        thread.join()
 
     n = 4000
     threads = []
