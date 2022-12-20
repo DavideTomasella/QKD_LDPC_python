@@ -79,7 +79,7 @@ class IdTree:
             return 1
         return 0
     def get_parity(self,x,y):
-        return (x[self.indexes]+y[self.indexes])%2
+        return sum(x[self.indexes]+y[self.indexes])%2
     def is_onebit(self):
         return len(self.indexes)==1
     def is_leaf(self):
@@ -100,12 +100,13 @@ def create_trees(length, n_blocks=2):
 
 def correct_tree(x,y,tree):
     add_info = 0
-    corr = {}
+    corr = set()
     iters = 0
+    # print(x[tree.indexes])
     if tree.is_onebit():
-        if tree.get_parity() != 0:
+        if tree.get_parity(x,y) != 0:
             x[tree.indexes] = 1 - x[tree.indexes]
-            corr |= tree.indexes
+            corr = set(tree.indexes)
             iters +=1
     elif tree.get_parity(x,y) !=0:
         add_info += tree.create_children()
@@ -118,11 +119,11 @@ def correct_tree(x,y,tree):
 
 def cascade_correction(x,y,tree, cc):
     add_info = 0
-    corr = {}
+    corr = set()
     iters = 0
     if cc in tree.indexes:
         if tree.is_leaf():
-            if tree.get_parity() != 0:
+            if tree.get_parity(x,y) != 0:
                 c_corr, c_iters, c_add_info = correct_tree(x,y,tree)
                 corr |= c_corr
                 iters += c_iters
@@ -157,7 +158,7 @@ def perform_cascade(x, y, qber_est, passes=4, konst=0.73, show=1, max_iter=10050
     for k_i in range(passes):
         splitting = choose_len(qber_est, k_i, n, konst)
         new_trees = create_trees(len(x), n_blocks=splitting)
-        corrected = {}
+        corrected = set()
         com_iters = 0
         # correction
         for tree in new_trees:
@@ -170,9 +171,11 @@ def perform_cascade(x, y, qber_est, passes=4, konst=0.73, show=1, max_iter=10050
                 ladd_info += add_info
                 com_iters = max(com_iters, iters)
         lcom_iters += com_iters
+        if show>1:
+            print(corrected)
         # cascade effect
         while len(corrected)>0:
-            new_corrected = {}
+            new_corrected = set()
             com_iters = 0
             for cc in corrected:
                 for tree in forest:
@@ -183,6 +186,8 @@ def perform_cascade(x, y, qber_est, passes=4, konst=0.73, show=1, max_iter=10050
                     com_iters = max(com_iters, iters)
             lcom_iters += com_iters
             corrected = new_corrected
+            if show>1:
+                print(corrected)
         forest.extend(new_trees)
     e_pat = (prev_x+x) % 2
     ver_check = (x == y).all()

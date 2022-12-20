@@ -1,4 +1,4 @@
-import cascade_lib as cs
+import cascade_correction_lib as cs
 import numpy as np
 from file_utils import codes_from_file
 import sys
@@ -55,11 +55,11 @@ if __name__ == '__main__':
 
     n = 32
     f_start = 1.0  # initial efficiency of decoding
-    qber_start = 0.08
+    qber_start = 0.02
     qber_end = 0.021
     qber_step = 0.001  # range of QBERs
     n_tries = 1  # number of keys proccessed for each QBER value
-    passes = 1  # 16
+    passes = 4  # 16
     konst = 1  # 1
     run_test_cascade(n, qber_start, None, qber_step,
                      n_tries, passes, konst,
