@@ -17,21 +17,21 @@ if __name__ == '__main__':
     n_tries = 200  # 200 - 20  # number of keys proccessed for each QBER value
     nthreads = 5
 
-    passes = 4
-    konst = 0.73
-    threads = []
-    for num in np.arange(nthreads):
-        qber_start = qber_start0+range*num
-        qber_end = qber_start+range
-        print("STARTING [%f,%f]" % (qber_start, qber_end))
-        threads.append(Process(target=run_test_cascade,
-                               args=(n, qber_start, qber_end, qber_step,
-                                     n_tries, passes, konst, lock, num)))
-    for thread in threads:
-        thread.start()
-    for thread in threads:
-        thread.join()
-    time.sleep(120)
+    # passes = 4
+    # konst = 0.73
+    # threads = []
+    # for num in np.arange(nthreads):
+    #     qber_start = qber_start0+range*num
+    #     qber_end = qber_start+range
+    #     print("STARTING [%f,%f]" % (qber_start, qber_end))
+    #     threads.append(Process(target=run_test_cascade,
+    #                            args=(n, qber_start, qber_end, qber_step,
+    #                                  n_tries, passes, konst, lock, num)))
+    # for thread in threads:
+    #     thread.start()
+    # for thread in threads:
+    #     thread.join()
+    # time.sleep(120)
     passes = 16
     konst = 1
     threads = []
@@ -46,21 +46,21 @@ if __name__ == '__main__':
         thread.start()
     for thread in threads:
         thread.join()
-    time.sleep(120)
-    passes = 4
-    konst = 0.1
-    threads = []
-    for num in np.arange(nthreads):
-        qber_start = qber_start0+range*num
-        qber_end = qber_start+range
-        print("STARTING [%f,%f]" % (qber_start, qber_end))
-        threads.append(Process(target=run_test_cascade,
-                               args=(n, qber_start, qber_end, qber_step,
-                                     n_tries, passes, konst, lock, num)))
-    for thread in threads:
-        thread.start()
-    for thread in threads:
-        thread.join()
+    # time.sleep(120)
+    # passes = 4
+    # konst = 0.1
+    # threads = []
+    # for num in np.arange(nthreads):
+    #     qber_start = qber_start0+range*num
+    #     qber_end = qber_start+range
+    #     print("STARTING [%f,%f]" % (qber_start, qber_end))
+    #     threads.append(Process(target=run_test_cascade,
+    #                            args=(n, qber_start, qber_end, qber_step,
+    #                                  n_tries, passes, konst, lock, num)))
+    # for thread in threads:
+    #     thread.start()
+    # for thread in threads:
+    #     thread.join()
     # threads = []
     # for num in np.arange(nthreads):
     #     qber_start = qber_start0+range*num

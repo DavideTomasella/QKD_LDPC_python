@@ -1,0 +1,1 @@
+code_n, n_tries,          qber,        f_mean,  c_iters_mean,  n_iters_mean,             R,  pass/s_n,  kost/p_n,   p_n_max,   correct/k_n,   discl_n,           FER 
